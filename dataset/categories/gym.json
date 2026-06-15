@@ -1,0 +1,1 @@
+{"slug": "gym", "name": "Gym", "voice": {"tone": "motivational", "vocab_taboo": ["lazy", "couch", "sedentary", "fat"]}, "triggers": ["attendance_drop", "referral_opportunity", "performance_dip"]}

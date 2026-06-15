@@ -1,0 +1,1 @@
+{"slug": "restaurant", "name": "Restaurant", "voice": {"tone": "operator", "vocab_taboo": ["gourmet", "exquisite", "culinary journey", "patron"]}, "triggers": ["order_dip", "review_alert", "weekend_opportunity"]}

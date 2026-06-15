@@ -1,0 +1,1 @@
+{"slug": "pharmacy", "name": "Pharmacy", "voice": {"tone": "trustworthy", "vocab_taboo": ["bargain", "deal", "limited offer", "hurry"]}, "triggers": ["inventory_alert", "repeat_purchase_gap", "seasonal_reminder"]}

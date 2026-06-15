@@ -1,0 +1,37 @@
+{"triggers": [
+  {
+    "id": "trg_search_spike_dentist",
+    "merchant_id": "m_dentist_01",
+    "kind": "search_spike",
+    "urgency": "high",
+    "payload": {"searches": 340, "vs_weekly_avg": 210, "growth_pct": 62, "top_query": "teeth whitening Bangalore"}
+  },
+  {
+    "id": "trg_perf_dip_salon",
+    "merchant_id": "m_salon_01",
+    "kind": "performance_dip",
+    "urgency": "medium",
+    "payload": {"views_last_week": 180, "avg_weekly_views": 290, "decline_pct": 38, "metric": "profile views"}
+  },
+  {
+    "id": "trg_order_dip_restaurant",
+    "merchant_id": "m_restaurant_01",
+    "kind": "order_dip",
+    "urgency": "high",
+    "payload": {"orders_last_3_days": 42, "avg_3_day_orders": 78, "decline_pct": 46}
+  },
+  {
+    "id": "trg_attendance_drop_gym",
+    "merchant_id": "m_gym_01",
+    "kind": "attendance_drop",
+    "urgency": "medium",
+    "payload": {"checkins_this_week": 85, "avg_weekly_checkins": 130, "decline_pct": 35}
+  },
+  {
+    "id": "trg_inventory_alert_pharmacy",
+    "merchant_id": "m_pharmacy_01",
+    "kind": "inventory_alert",
+    "urgency": "low",
+    "payload": {"low_stock_items": ["paracetamol", "cough_syrup"], "restock_urgency": "within_week"}
+  }
+]}

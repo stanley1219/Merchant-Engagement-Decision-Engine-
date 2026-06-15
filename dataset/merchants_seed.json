@@ -1,0 +1,98 @@
+{"merchants": [
+  {
+    "merchant_id": "m_dentist_01",
+    "category_slug": "dentist",
+    "identity": {
+      "name": "Bright Smile Dental",
+      "owner_first_name": "Rajesh",
+      "locality": "Koramangala",
+      "languages": ["en", "kn"]
+    },
+    "performance": {
+      "views": 1240,
+      "calls": 85,
+      "ctr": 0.042,
+      "monthly_bookings": 320,
+      "weekly_bookings": 78,
+      "review_score": 4.5,
+      "review_count": 120
+    },
+    "signals": ["recent_review_drop"],
+    "offers": [{"id": "off_01", "title": "Free Dental Checkup", "status": "active"}]
+  },
+  {
+    "merchant_id": "m_salon_01",
+    "category_slug": "salon",
+    "identity": {
+      "name": "StyleCraft Salon",
+      "owner_first_name": "Priya",
+      "locality": "Indiranagar",
+      "languages": ["en", "hi"]
+    },
+    "performance": {
+      "views": 890,
+      "calls": 45,
+      "ctr": 0.038,
+      "monthly_bookings": 210,
+      "weekly_bookings": 52
+    },
+    "signals": ["new_competitor_nearby"],
+    "offers": []
+  },
+  {
+    "merchant_id": "m_restaurant_01",
+    "category_slug": "restaurant",
+    "identity": {
+      "name": "Spice Garden",
+      "owner_first_name": "Arun",
+      "locality": "HSR Layout",
+      "languages": ["en", "hi", "ta"]
+    },
+    "performance": {
+      "views": 2100,
+      "calls": 120,
+      "ctr": 0.051,
+      "average_order_value": 450,
+      "weekend_sales": 12000
+    },
+    "signals": ["weekend_sales_decline"],
+    "offers": [{"id": "off_02", "title": "20% Off on Family Combos", "status": "active"}]
+  },
+  {
+    "merchant_id": "m_gym_01",
+    "category_slug": "gym",
+    "identity": {
+      "name": "FitZone Gym",
+      "owner_first_name": "Suresh",
+      "locality": "Whitefield",
+      "languages": ["en", "kn", "ta"]
+    },
+    "performance": {
+      "views": 1560,
+      "calls": 95,
+      "ctr": 0.046,
+      "new_members_last_week": 12,
+      "usual_weekly_avg": 18
+    },
+    "signals": ["membership_renewal_dip"],
+    "offers": [{"id": "off_03", "title": "Summer Fitness Pass - 30% Off", "status": "active"}]
+  },
+  {
+    "merchant_id": "m_pharmacy_01",
+    "category_slug": "pharmacy",
+    "identity": {
+      "name": "MediCare Pharmacy",
+      "owner_first_name": "Anita",
+      "locality": "Jayanagar",
+      "languages": ["en", "hi", "kn"]
+    },
+    "performance": {
+      "views": 670,
+      "calls": 140,
+      "ctr": 0.062,
+      "repeat_rate": 0.35
+    },
+    "signals": [],
+    "offers": []
+  }
+]}

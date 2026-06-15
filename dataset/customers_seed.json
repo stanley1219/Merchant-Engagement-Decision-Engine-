@@ -1,0 +1,5 @@
+{"customers": [
+  {"customer_id": "c_001", "merchant_id": "m_dentist_01", "name": "Vikram Mehta", "phone": "+919800000001", "tags": ["regular"], "lifetime_value": 5000, "visit_count": 8},
+  {"customer_id": "c_002", "merchant_id": "m_salon_01", "name": "Neha Sharma", "phone": "+919800000002", "tags": ["vip"], "lifetime_value": 12000, "visit_count": 24},
+  {"customer_id": "c_003", "merchant_id": "m_restaurant_01", "name": "Ravi Kumar", "phone": "+919800000003", "tags": ["frequent"], "lifetime_value": 8500, "visit_count": 15}
+]}

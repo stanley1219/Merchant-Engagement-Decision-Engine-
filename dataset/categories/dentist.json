@@ -1,0 +1,1 @@
+{"slug": "dentist", "name": "Dentist", "voice": {"tone": "clinical", "vocab_taboo": ["bro", "chill", "vibe", "dude", "rockstar"]}, "triggers": ["search_spike", "performance_dip", "review_alert"]}

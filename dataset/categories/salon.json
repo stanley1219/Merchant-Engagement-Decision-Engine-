@@ -1,0 +1,1 @@
+{"slug": "salon", "name": "Salon", "voice": {"tone": "warm", "vocab_taboo": ["clinical", "procedure", "diagnosis", "sterile"]}, "triggers": ["no_show", "performance_dip", "search_spike"]}

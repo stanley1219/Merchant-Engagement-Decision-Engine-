@@ -1,0 +1,95 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: vera-postgres
+    environment:
+      POSTGRES_DB: vera
+      POSTGRES_USER: vera
+      POSTGRES_PASSWORD: vera_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vera -d vera"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vera-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: vera-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vera-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: vera-app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://vera:vera_dev_password@postgres:5432/vera
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - vera-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: vera-worker
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://vera:vera_dev_password@postgres:5432/vera
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: python -m src.workers.tick_processor
+    networks:
+      - vera-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  vera-network:
+    driver: bridge
