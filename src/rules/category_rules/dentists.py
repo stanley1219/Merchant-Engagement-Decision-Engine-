@@ -15,7 +15,7 @@ class SearchSpikeRule(BaseRule):
         customer: Optional[Dict[str, Any]] = None,
     ) -> Optional[Signal]:
         searches = trigger.get("payload", {}).get("searches", 0)
-        keyword = trigger.get("payload", {}).get("keyword", "")
+        keyword = trigger.get("payload", {}).get("keyword", "") or trigger.get("payload", {}).get("top_query", "")
         locality = trigger.get("payload", {}).get("locality", "")
 
         if searches < 50:

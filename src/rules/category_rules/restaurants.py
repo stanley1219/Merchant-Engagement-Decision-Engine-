@@ -141,7 +141,47 @@ class CorporateEnquiryRule(BaseRule):
         )
 
 
+class OrderDipRule(BaseRule):
+    category = Category.RESTAURANT
+    trigger_types = [TriggerType.ORDER_DIP]
+
+    def evaluate(
+        self,
+        merchant: Dict[str, Any],
+        trigger: Dict[str, Any],
+        customer: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Signal]:
+        payload = trigger.get("payload", {})
+        orders_last = payload.get("orders_last_3_days", 0)
+        avg_orders = payload.get("avg_3_day_orders", 1)
+        decline_pct = payload.get("decline_pct", 0)
+
+        if decline_pct < 10:
+            return None
+
+        offer = self._find_matching_offer(merchant, ["combo", "family", "group", "lunch", "discount", "offer"])
+
+        score = min(85, 55 + decline_pct)
+        daily_loss = (avg_orders - orders_last) * merchant.get("performance", {}).get("average_order_value", 450)
+        return Signal(
+            signal_type=SignalType.ACQUISITION_DIP,
+            trigger_type=TriggerType.ORDER_DIP,
+            score=score,
+            data={
+                "dip_percent": decline_pct,
+                "period": "3 days",
+                "current": orders_last,
+                "usual": avg_orders,
+                "daily_loss": daily_loss,
+                "offer_name": offer.get("name") if offer else None,
+                "offer_price": offer.get("price") if offer else None,
+            },
+            rationale=f"Orders dropped {decline_pct}% in 3 days ({orders_last} vs {avg_orders} avg)" + (f" - {offer.get('name')} can help recover" if offer else ""),
+        )
+
+
 rule_engine.register(Category.RESTAURANT, EventSpikeRule())
 rule_engine.register(Category.RESTAURANT, SalesDipRule())
 rule_engine.register(Category.RESTAURANT, NewMenuRule())
 rule_engine.register(Category.RESTAURANT, CorporateEnquiryRule())
+rule_engine.register(Category.RESTAURANT, OrderDipRule())

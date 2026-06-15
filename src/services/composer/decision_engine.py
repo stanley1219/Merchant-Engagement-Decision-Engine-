@@ -46,8 +46,9 @@ class DecisionEngine:
         merchant_id = merchant.get("identity", {}).get("merchant_id", "unknown")
         customer_id = customer.get("identity", {}).get("customer_id") if customer else None
 
-        message = template.message_template.format(**signal.data)
-        cta = template.cta_template.format(**signal.data)
+        format_ctx = {**signal.data, **merchant.get("identity", {}), **merchant.get("performance", {})}
+        message = template.message_template.format(**format_ctx)
+        cta = template.cta_template.format(**format_ctx)
 
         is_suppressed, suppression_key = await self._suppression.check_and_suppress(
             merchant_id=merchant_id,

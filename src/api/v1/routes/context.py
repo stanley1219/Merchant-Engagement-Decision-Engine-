@@ -52,7 +52,14 @@ async def upsert_context(
         trigger_id = body.context_id
         normalized = dict(payload)
         if "kind" in normalized and "type" not in normalized:
-            normalized["type"] = normalized["kind"]
+            kind = normalized["kind"]
+            type_map = {
+                "inventory_alert": "stock_alert",
+                "order_dip": "order_dip",
+                "attendance_drop": "attendance_drop",
+                "performance_dip": "performance_dip",
+            }
+            normalized["type"] = type_map.get(kind, kind)
         await redis.set(f"trigger:{trigger_id}", normalized)
         logger.info("Trigger context cached", context_id=trigger_id, version=body.version)
 

@@ -1,7 +1,6 @@
 from typing import Any
 
-from google import genai
-from google.genai import types
+from groq import AsyncGroq
 
 from src.core.config import get_settings
 from src.core.exceptions import LLMError
@@ -26,17 +25,17 @@ def _get_system_prompt(category: str) -> str:
     return prompt
 
 
-class GeminiClient:
+class GroqClient:
     def __init__(self) -> None:
-        self._client: genai.Client | None = None
+        self._client: AsyncGroq | None = None
 
-    def _ensure_client(self) -> genai.Client:
+    def _ensure_client(self) -> AsyncGroq:
         if self._client is not None:
             return self._client
-        api_key = settings.GEMINI_API_KEY
+        api_key = settings.GROQ_API_KEY
         if not api_key:
-            raise LLMError("GEMINI_API_KEY is not configured")
-        self._client = genai.Client(api_key=api_key)
+            raise LLMError("GROQ_API_KEY is not configured")
+        self._client = AsyncGroq(api_key=api_key)
         return self._client
 
     async def get_available_categories(self) -> list[str]:
@@ -48,51 +47,59 @@ class GeminiClient:
         message_template: str,
         cta_template: str,
         signal_data: dict[str, Any],
+        merchant_data: dict[str, Any] | None = None,
         send_as_default: str = "Vera",
     ) -> LLMComposeOutput:
         client = self._ensure_client()
         system_prompt = _get_system_prompt(category)
+        merchant_identity = merchant_data.get("identity", {}) if merchant_data else {}
+        merchant_performance = merchant_data.get("performance", {}) if merchant_data else {}
         user_prompt = (
             f"Polish a message for this scenario:\n\n"
             f"Category: {category}\n"
+            f"Merchant: {merchant_identity.get('name', 'Unknown')} "
+            f"(Owner: {merchant_identity.get('owner_first_name', 'Owner')}, "
+            f"Locality: {merchant_identity.get('locality', 'Unknown')})\n"
+            f"Merchant Performance: {merchant_performance}\n"
             f"Base Message: {message_template}\n"
             f"Call to Action: {cta_template}\n"
-            f"Context data: {signal_data}\n"
+            f"Signal Data: {signal_data}\n"
             f"Default send_as: {send_as_default}\n\n"
             f"Return JSON with: message, cta, send_as, rationale. "
+            f"Personalize with merchant name, locality, and performance metrics. "
             f"Keep the message faithful to the intent of the base message."
         )
 
         try:
-            response = client.models.generate_content(
-                model=settings.GEMINI_MODEL,
-                contents=user_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
-                    temperature=settings.GEMINI_TEMPERATURE,
-                    max_output_tokens=settings.GEMINI_MAX_TOKENS,
-                    response_mime_type="application/json",
-                    response_schema=LLMComposeOutput,
-                ),
+            response = await client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=settings.GROQ_TEMPERATURE,
+                max_tokens=settings.GROQ_MAX_TOKENS,
+                response_format={"type": "json_object"},
             )
 
-            if not response.text:
-                raise LLMError("Empty response from Gemini")  # noqa: TRY301
+            if not response.choices or not response.choices[0].message.content:
+                raise LLMError("Empty response from Groq")
 
-            parsed: LLMComposeOutput = response.parsed
-            return parsed  # noqa: TRY300
+            content = response.choices[0].message.content
+            parsed: LLMComposeOutput = LLMComposeOutput.model_validate_json(content)
+            return parsed
 
         except LLMError:
             raise
         except Exception as e:
-            raise LLMError(f"Gemini API call failed: {e}") from e
+            raise LLMError(f"Groq API call failed: {e}") from e
 
 
-_gemini_client: GeminiClient | None = None
+_groq_client: GroqClient | None = None
 
 
-async def get_llm() -> GeminiClient:
-    global _gemini_client  # noqa: PLW0603
-    if _gemini_client is None:
-        _gemini_client = GeminiClient()
-    return _gemini_client
+async def get_llm() -> GroqClient:
+    global _groq_client
+    if _groq_client is None:
+        _groq_client = GroqClient()
+    return _groq_client

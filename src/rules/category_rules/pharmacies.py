@@ -146,19 +146,18 @@ class StockAlertRule(BaseRule):
         trigger: dict[str, Any],
         customer: dict[str, Any] | None = None,
     ) -> Signal | None:
-        medication = trigger.get("payload", {}).get("medication", "")
-        current_stock = trigger.get("payload", {}).get("current_stock", 0)
-        reorder_level = trigger.get("payload", {}).get("reorder_level", 10)
-        demand_forecast = trigger.get("payload", {}).get("demand_forecast", 0)
+        payload = trigger.get("payload", {})
+        low_stock_items = payload.get("low_stock_items", [])
+        restock_urgency = payload.get("restock_urgency", "")
 
-        if not medication:
+        if not low_stock_items:
             return None
 
-        if current_stock > reorder_level:
-            return None
+        medication = low_stock_items[0] if isinstance(low_stock_items, list) else low_stock_items
+        medications_str = ", ".join(low_stock_items) if isinstance(low_stock_items, list) else str(low_stock_items)
 
-        stockout_risk = max(0, 1 - (current_stock / max(reorder_level, 1)))
-        score = min(90, 50 + int(stockout_risk * 40))
+        urgency_scores = {"within_week": 70, "within_days": 85, "critical": 95}
+        score = urgency_scores.get(restock_urgency.lower(), 60)
 
         return Signal(
             signal_type=SignalType.REVENUE_OPPORTUNITY,
@@ -166,14 +165,10 @@ class StockAlertRule(BaseRule):
             score=score,
             data={
                 "medication": medication,
-                "current_stock": current_stock,
-                "reorder_level": reorder_level,
-                "demand_forecast": demand_forecast,
+                "medications": medications_str,
+                "restock_urgency": restock_urgency,
             },
-            rationale=(
-                f"Low stock alert: {medication} "
-                f"({current_stock}/{reorder_level} units, forecast: {demand_forecast}/week)"
-            ),
+            rationale=f"Low stock: {medications_str} (urgency: {restock_urgency})",
         )
 
 

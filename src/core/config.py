@@ -31,11 +31,11 @@ class Settings(BaseSettings):
     REDIS_SOCKET_TIMEOUT: int = Field(default=5)
     REDIS_SOCKET_CONNECT_TIMEOUT: int = Field(default=5)
 
-    # Gemini API
-    GEMINI_API_KEY: str = Field(default="")
-    GEMINI_MODEL: str = Field(default="gemini-2.0-flash-exp")
-    GEMINI_TEMPERATURE: float = Field(default=0.0)
-    GEMINI_MAX_TOKENS: int = Field(default=1024)
+    # Groq API
+    GROQ_API_KEY: str = Field(default="")
+    GROQ_MODEL: str = Field(default="llama-3.3-70b-versatile")
+    GROQ_TEMPERATURE: float = Field(default=0.0)
+    GROQ_MAX_TOKENS: int = Field(default=1024)
 
     # Security
     API_KEY_HEADER: str = Field(default="X-API-Key")
@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     # Tick Processing
     TICK_BATCH_SIZE: int = Field(default=20)
     TICK_TIMEOUT: int = Field(default=25)
+
+    @property
+    def database_url_async(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgresql://") and "+asyncpg" not in url:
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
 
     @property
     def is_production(self) -> bool:

@@ -46,7 +46,7 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://vera:vera_dev_password@postgres:5432/vera
       - REDIS_URL=redis://redis:6379/0
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - ENVIRONMENT=development
       - LOG_LEVEL=DEBUG
     ports:
@@ -72,7 +72,7 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://vera:vera_dev_password@postgres:5432/vera
       - REDIS_URL=redis://redis:6379/0
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - ENVIRONMENT=development
       - LOG_LEVEL=DEBUG
     volumes:

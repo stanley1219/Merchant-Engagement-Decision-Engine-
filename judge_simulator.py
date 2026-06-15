@@ -23,10 +23,11 @@ Author: magicpin AI Challenge Team
 # Your bot's URL (where your bot is running)
 BOT_URL = "http://localhost:8000"
 
-# Choose your LLM provider: "openai", "anthropic", "gemini", "deepseek", "groq", "ollama", "openrouter"
+# Choose your LLM provider: "openai", "anthropic", "deepseek", "groq", "ollama", "openrouter"
 LLM_PROVIDER = "groq"
 
 # Your API key (paste your key here)
+import os
 LLM_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # Model to use (leave empty for default, or specify like "gpt-4o", "claude-3-5-sonnet-20241022", etc.)
@@ -36,7 +37,7 @@ LLM_MODEL = "llama-3.3-70b-versatile"
 OLLAMA_URL = "http://localhost:11434"
 
 # Which test to run by default
-TEST_SCENARIO = "all"
+TEST_SCENARIO = "full_evaluation"
 
 # =============================================================================
 # ██████  END OF CONFIGURATION - DON'T EDIT BELOW THIS LINE ██████
@@ -206,28 +207,6 @@ class AnthropicProvider(LLMProvider):
         return data["content"][0]["text"]
 
 
-class GeminiProvider(LLMProvider):
-    def __init__(self, api_key: str, model: str = ""):
-        self.api_key = api_key
-        self.model = model or "gemini-1.5-flash"
-
-    def name(self) -> str:
-        return f"Gemini ({self.model})"
-
-    def complete(self, prompt: str, system: str = None) -> str:
-        full_prompt = f"{system}\n\n{prompt}" if system else prompt
-        body = json.dumps({
-            "contents": [{"parts": [{"text": full_prompt}]}],
-            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1500}
-        }).encode("utf-8")
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-        req = urlrequest.Request(url, data=body, headers={"Content-Type": "application/json"})
-        resp = urlrequest.urlopen(req, timeout=TIMEOUT_LLM)
-        data = json.loads(resp.read().decode("utf-8"))
-        return data["candidates"][0]["content"]["parts"][0]["text"]
-
-
 class DeepSeekProvider(LLMProvider):
     def __init__(self, api_key: str, model: str = ""):
         self.api_key = api_key
@@ -256,7 +235,7 @@ class DeepSeekProvider(LLMProvider):
 class GroqProvider(LLMProvider):
     def __init__(self, api_key: str, model: str = ""):
         self.api_key = api_key
-        self.model = model or "llama-3.1-70b-versatile"
+        self.model = model or "llama-3.3-70b-versatile"
 
     def name(self) -> str:
         return f"Groq ({self.model})"
@@ -330,7 +309,6 @@ def create_provider() -> LLMProvider:
     providers = {
         "openai": lambda: OpenAIProvider(LLM_API_KEY, LLM_MODEL),
         "anthropic": lambda: AnthropicProvider(LLM_API_KEY, LLM_MODEL),
-        "gemini": lambda: GeminiProvider(LLM_API_KEY, LLM_MODEL),
         "deepseek": lambda: DeepSeekProvider(LLM_API_KEY, LLM_MODEL),
         "groq": lambda: GroqProvider(LLM_API_KEY, LLM_MODEL),
         "ollama": lambda: OllamaProvider(LLM_MODEL, OLLAMA_URL),

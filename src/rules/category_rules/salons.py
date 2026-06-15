@@ -127,7 +127,44 @@ class StylistAvailabilityRule(BaseRule):
         )
 
 
+class PerformanceDipRule(BaseRule):
+    category = Category.SALON
+    trigger_types = [TriggerType.PERFORMANCE_DIP]
+
+    def evaluate(
+        self,
+        merchant: Dict[str, Any],
+        trigger: Dict[str, Any],
+        customer: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Signal]:
+        payload = trigger.get("payload", {})
+        decline_pct = payload.get("decline_pct", 0)
+        metric = payload.get("metric", "views")
+
+        if decline_pct < 15:
+            return None
+
+        offer = self._find_matching_offer(merchant, ["bridal", "spa", "facial", "hair", "package"])
+
+        score = min(85, 50 + decline_pct)
+        return Signal(
+            signal_type=SignalType.ACQUISITION_DIP,
+            trigger_type=TriggerType.PERFORMANCE_DIP,
+            score=score,
+            data={
+                "decline_pct": decline_pct,
+                "metric": metric,
+                "views_last_week": payload.get("views_last_week", 0),
+                "avg_weekly_views": payload.get("avg_weekly_views", 0),
+                "offer_name": offer.get("name") if offer else None,
+                "offer_price": offer.get("price") if offer else None,
+            },
+            rationale=f"Salon {metric} dropped {decline_pct}%" + (f" - {offer.get('name')} can help" if offer else ""),
+        )
+
+
 rule_engine.register(Category.SALON, CustomerLapseRule())
 rule_engine.register(Category.SALON, BridalFollowupRule())
 rule_engine.register(Category.SALON, SeasonalTrendRule())
 rule_engine.register(Category.SALON, StylistAvailabilityRule())
+rule_engine.register(Category.SALON, PerformanceDipRule())

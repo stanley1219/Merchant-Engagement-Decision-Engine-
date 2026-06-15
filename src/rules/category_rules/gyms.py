@@ -121,7 +121,47 @@ class ClassWaitlistRule(BaseRule):
         )
 
 
+class AttendanceDropRule(BaseRule):
+    category = Category.GYM
+    trigger_types = [TriggerType.ATTENDANCE_DROP]
+
+    def evaluate(
+        self,
+        merchant: Dict[str, Any],
+        trigger: Dict[str, Any],
+        customer: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Signal]:
+        payload = trigger.get("payload", {})
+        checkins_this = payload.get("checkins_this_week", 0)
+        avg_checkins = payload.get("avg_weekly_checkins", 1)
+        decline_pct = payload.get("decline_pct", 0)
+
+        if decline_pct < 10:
+            return None
+
+        offer = self._find_matching_offer(merchant, ["referral", "bring a friend", "guest", "trial", "summer"])
+
+        lost_members = avg_checkins - checkins_this
+        score = min(85, 55 + decline_pct)
+        return Signal(
+            signal_type=SignalType.ACQUISITION_DIP,
+            trigger_type=TriggerType.ATTENDANCE_DROP,
+            score=score,
+            data={
+                "dip_percent": decline_pct,
+                "period": "week",
+                "new_members": checkins_this,
+                "usual_avg": avg_checkins,
+                "lost_members": max(0, lost_members),
+                "offer_name": offer.get("name") if offer else None,
+                "offer_price": offer.get("price") if offer else None,
+            },
+            rationale=f"Check-ins dropped {decline_pct}% this week ({checkins_this} vs {avg_checkins} avg)" + (f" - {offer.get('name')} can help" if offer else ""),
+        )
+
+
 rule_engine.register(Category.GYM, MembershipDipRule())
 rule_engine.register(Category.GYM, TrialConversionRule())
 rule_engine.register(Category.GYM, SeasonalSurgeRule())
 rule_engine.register(Category.GYM, ClassWaitlistRule())
+rule_engine.register(Category.GYM, AttendanceDropRule())
